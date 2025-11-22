@@ -90,3 +90,5 @@ Bu proje, N-Layer mimaride geliştirilmiş bir .NET 8 Web API ve Angular 16 fron
 - LocalDB connection string kullanılmıştır
 - CORS policy Angular uygulaması için yapılandırılmıştır
 
+
+

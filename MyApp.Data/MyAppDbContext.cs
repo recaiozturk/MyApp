@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using MyApp.Core.Entities;
 
 namespace MyApp.Data
 {
-    public class MyAppDbContext : DbContext
+    public class MyAppDbContext : IdentityDbContext<ApplicationUser>
     {
         public MyAppDbContext(DbContextOptions<MyAppDbContext> options) : base(options)
         {
@@ -33,7 +35,7 @@ namespace MyApp.Data
                     Price = 99.99m,
                     Stock = 100,
                     Category = "Electronics",
-                    CreatedDate = DateTime.UtcNow,
+                    CreatedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                     IsActive = true
                 });
             });
