@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Core.DTOs;
 using MyApp.Core.Interfaces;
@@ -6,6 +7,7 @@ namespace MyApp.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize] // Tüm endpoint'ler için authentication gerekli
     public class ProductsController : ControllerBase
     {
         private readonly IProductService _productService;

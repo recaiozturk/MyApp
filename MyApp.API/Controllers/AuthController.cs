@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Core.DTOs;
 using MyApp.Core.Interfaces;
@@ -6,6 +7,7 @@ namespace MyApp.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [AllowAnonymous]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -68,4 +70,5 @@ namespace MyApp.API.Controllers
         }
     }
 }
+
 

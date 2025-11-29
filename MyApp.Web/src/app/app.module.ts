@@ -10,13 +10,15 @@ import { ProductListComponent } from './components/product-list/product-list.com
 import { ProductFormComponent } from './components/product-form/product-form.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { LoginComponent } from './components/login/login.component';
+import { RegisterComponent } from './components/register/register.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     ProductListComponent,
     ProductFormComponent,
-    LoginComponent
+    LoginComponent,
+    RegisterComponent
   ],
   imports: [
     BrowserModule,

@@ -114,9 +114,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp",
         policy => policy
-            .WithOrigins("http://localhost:4200")
+            .WithOrigins("http://localhost:4200", "https://localhost:4200")
             .AllowAnyMethod()
-            .AllowAnyHeader());
+            .AllowAnyHeader()
+            .AllowCredentials());
 });
 
 var app = builder.Build();
@@ -133,6 +134,7 @@ else
     // Production'da Swagger'ı kapat ve CORS'a gerek yok (aynı origin)
     app.UseDefaultFiles();
     app.UseStaticFiles();
+    app.MapFallbackToFile("index.html");
 }
 
 app.UseHttpsRedirection();
@@ -144,10 +146,78 @@ app.UseAuthorization();
 // API routes
 app.MapControllers();
 
-// SPA fallback - Production'da Angular routing için
-if (!app.Environment.IsDevelopment())
-{
-    app.MapFallbackToFile("index.html");
-}
+// Seed SuperAdmin user (sadece ilk kurulumda)
+await SeedSuperAdminAsync(app.Services);
 
 app.Run();
+
+// Seed SuperAdmin method
+static async Task SeedSuperAdminAsync(IServiceProvider serviceProvider)
+{
+    using var scope = serviceProvider.CreateScope();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        // SuperAdmin rolünü oluştur (yoksa)
+        const string superAdminRole = "SuperAdmin";
+        if (!await roleManager.RoleExistsAsync(superAdminRole))
+        {
+            await roleManager.CreateAsync(new IdentityRole(superAdminRole));
+            logger.LogInformation("SuperAdmin role created.");
+        }
+
+        // SuperAdmin kullanıcısını oluştur (yoksa)
+        var superAdminConfig = configuration.GetSection("SuperAdmin");
+        var userName = superAdminConfig["UserName"];
+        var email = superAdminConfig["Email"];
+        var password = superAdminConfig["Password"];
+        var firstName = superAdminConfig["FirstName"];
+        var lastName = superAdminConfig["LastName"];
+
+        if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+        {
+            logger.LogWarning("SuperAdmin configuration is missing in appsettings.json. Skipping seed.");
+            return;
+        }
+
+        var existingUser = await userManager.FindByNameAsync(userName);
+        if (existingUser == null)
+        {
+            var superAdmin = new ApplicationUser
+            {
+                UserName = userName,
+                Email = email,
+                FirstName = firstName,
+                LastName = lastName,
+                CreatedDate = DateTime.UtcNow,
+                IsActive = true,
+                EmailConfirmed = true // SuperAdmin için email confirmation atla
+            };
+
+            var result = await userManager.CreateAsync(superAdmin, password);
+            if (result.Succeeded)
+            {
+                // SuperAdmin rolünü ata
+                await userManager.AddToRoleAsync(superAdmin, superAdminRole);
+                logger.LogInformation("SuperAdmin user created successfully.");
+            }
+            else
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                logger.LogError("Failed to create SuperAdmin user: {Errors}", errors);
+            }
+        }
+        else
+        {
+            logger.LogInformation("SuperAdmin user already exists. Skipping seed.");
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while seeding SuperAdmin user.");
+    }
+}

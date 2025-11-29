@@ -1,1 +1,53 @@
-<p>login works!</p>
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title text-center mb-4">Giriş Yap</h3>
+          
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            <div class="mb-3">
+              <label for="userName" class="form-label">Kullanıcı Adı</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="userName"
+                formControlName="userName"
+                [class.is-invalid]="loginForm.get('userName')?.invalid && loginForm.get('userName')?.touched"
+              >
+              <div class="invalid-feedback" *ngIf="loginForm.get('userName')?.invalid && loginForm.get('userName')?.touched">
+                Kullanıcı adı gereklidir.
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="password" class="form-label">Şifre</label>
+              <input 
+                type="password" 
+                class="form-control" 
+                id="password"
+                formControlName="password"
+                [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+              >
+              <div class="invalid-feedback" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+                Şifre gereklidir.
+              </div>
+            </div>
+
+            <div class="alert alert-danger" *ngIf="errorMessage">
+              {{ errorMessage }}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100" [disabled]="loginForm.invalid">
+              Giriş Yap
+            </button>
+          </form>
+
+          <div class="text-center mt-3">
+            <p>Hesabınız yok mu? <a routerLink="/register">Kayıt Ol</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
