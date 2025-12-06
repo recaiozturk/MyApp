@@ -1,6 +1,7 @@
 using AutoMapper;
 using MyApp.Core.DTOs;
 using MyApp.Core.Entities;
+using MyApp.Core.Exceptions;
 using MyApp.Core.Interfaces;
 using MyApp.Data.Repositories;
 
@@ -23,9 +24,12 @@ namespace MyApp.Services
             return _mapper.Map<IEnumerable<ProductDto>>(products);
         }
 
-        public async Task<ProductDto?> GetProductByIdAsync(int id)
+        public async Task<ProductDto> GetProductByIdAsync(int id)
         {
             var product = await _productRepository.GetByIdAsync(id);
+            if (product == null)
+                throw new NotFoundException(nameof(Product), id);
+
             return _mapper.Map<ProductDto>(product);
         }
 
@@ -43,7 +47,7 @@ namespace MyApp.Services
         {
             var existingProduct = await _productRepository.GetByIdAsync(id);
             if (existingProduct == null)
-                throw new ArgumentException($"Product with id {id} not found");
+                throw new NotFoundException(nameof(Product), id);
 
             _mapper.Map(updateProductDto, existingProduct);
             existingProduct.UpdatedDate = DateTime.UtcNow;
@@ -56,7 +60,7 @@ namespace MyApp.Services
         {
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null)
-                throw new ArgumentException($"Product with id {id} not found");
+                throw new NotFoundException(nameof(Product), id);
 
             await _productRepository.DeleteAsync(product);
         }

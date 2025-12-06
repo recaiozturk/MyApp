@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using MyApp.API.Options;
 using MyApp.Core.Entities;
 using MyApp.Data;
 
@@ -9,17 +11,33 @@ namespace MyApp.API.Extensions
     {
         /// <summary>
         /// DbContext ve ASP.NET Core Identity servislerini yapılandırır.
+        /// Options Pattern kullanarak appsettings.json'dan Database ayarlarını okur.
         /// </summary>
         public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration configuration)
         {
-            // Add DbContext
-            services.AddDbContext<MyAppDbContext>(options =>
+            // Options Pattern ile DatabaseSettings'i register et
+            services.Configure<DatabaseSettings>(configuration.GetSection(DatabaseSettings.SectionName));
+            
+            // Options Pattern ile SuperAdminSettings'i register et
+            services.Configure<SuperAdminSettings>(configuration.GetSection(SuperAdminSettings.SectionName));
+
+            // Add DbContext - Options'dan connection string'i al
+            services.AddDbContext<MyAppDbContext>((serviceProvider, options) =>
+            {
+                var dbSettings = serviceProvider.GetRequiredService<IOptions<DatabaseSettings>>().Value;
+                
+                if (string.IsNullOrEmpty(dbSettings.DefaultConnection))
+                {
+                    throw new InvalidOperationException("DefaultConnection is not configured in appsettings.json");
+                }
+
                 options.UseSqlServer(
-                    configuration.GetConnectionString("DefaultConnection"),
+                    dbSettings.DefaultConnection,
                     sqlServerOptions => sqlServerOptions.EnableRetryOnFailure(
                         maxRetryCount: 5,
                         maxRetryDelay: TimeSpan.FromSeconds(30),
-                        errorNumbersToAdd: null)));
+                        errorNumbersToAdd: null));
+            });
 
             // Add Identity
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>

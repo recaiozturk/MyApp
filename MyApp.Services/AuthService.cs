@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MyApp.Core.DTOs;
 using MyApp.Core.Entities;
+using MyApp.Core.Exceptions;
 using MyApp.Core.Interfaces;
+using MyApp.Core.Options;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -13,14 +15,14 @@ namespace MyApp.Services
     public class AuthService : IAuthService
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IConfiguration _configuration;
+        private readonly JwtSettings _jwtSettings;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
-            IConfiguration configuration)
+            IOptions<JwtSettings> jwtSettings)
         {
             _userManager = userManager;
-            _configuration = configuration;
+            _jwtSettings = jwtSettings.Value;
         }
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
@@ -29,13 +31,13 @@ namespace MyApp.Services
             var existingUser = await _userManager.FindByEmailAsync(registerDto.Email);
             if (existingUser != null)
             {
-                throw new InvalidOperationException("User with this email already exists.");
+                throw new BadRequestException("User with this email already exists.");
             }
 
             existingUser = await _userManager.FindByNameAsync(registerDto.UserName);
             if (existingUser != null)
             {
-                throw new InvalidOperationException("Username is already taken.");
+                throw new BadRequestException("Username is already taken.");
             }
 
             // Create new user
@@ -54,7 +56,7 @@ namespace MyApp.Services
             if (!result.Succeeded)
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                throw new InvalidOperationException($"User creation failed: {errors}");
+                throw new BadRequestException($"User creation failed: {errors}");
             }
 
             // Generate token
@@ -63,7 +65,7 @@ namespace MyApp.Services
             return new AuthResponseDto
             {
                 Token = token,
-                Expiration = DateTime.UtcNow.AddMinutes(GetJwtExpirationMinutes()),
+                Expiration = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes),
                 UserId = user.Id,
                 UserName = user.UserName ?? string.Empty,
                 Email = user.Email ?? string.Empty,
@@ -77,19 +79,19 @@ namespace MyApp.Services
             var user = await _userManager.FindByNameAsync(loginDto.UserName);
             if (user == null)
             {
-                throw new UnauthorizedAccessException("Invalid username or password.");
+                throw new UnauthorizedException("Invalid username or password.");
             }
 
             if (!user.IsActive)
             {
-                throw new UnauthorizedAccessException("User account is deactivated.");
+                throw new UnauthorizedException("User account is deactivated.");
             }
 
             var passwordValid = await _userManager.CheckPasswordAsync(user, loginDto.Password);
 
             if (!passwordValid)
             {
-                throw new UnauthorizedAccessException("Invalid username or password.");
+                throw new UnauthorizedException("Invalid username or password.");
             }
 
             // Generate token
@@ -98,7 +100,7 @@ namespace MyApp.Services
             return new AuthResponseDto
             {
                 Token = token,
-                Expiration = DateTime.UtcNow.AddMinutes(GetJwtExpirationMinutes()),
+                Expiration = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes),
                 UserId = user.Id,
                 UserName = user.UserName ?? string.Empty,
                 Email = user.Email ?? string.Empty,
@@ -109,12 +111,12 @@ namespace MyApp.Services
 
         private string GenerateJwtToken(ApplicationUser user)
         {
-            var jwtSettings = _configuration.GetSection("JwtSettings");
-            var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is not configured");
-            var issuer = jwtSettings["Issuer"] ?? "MyApp";
-            var audience = jwtSettings["Audience"] ?? "MyAppUsers";
+            if (string.IsNullOrEmpty(_jwtSettings.SecretKey))
+            {
+                throw new InvalidOperationException("JWT SecretKey is not configured");
+            }
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -128,10 +130,10 @@ namespace MyApp.Services
             };
 
             var token = new JwtSecurityToken(
-                issuer: issuer,
-                audience: audience,
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(GetJwtExpirationMinutes()),
+                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes),
                 signingCredentials: credentials
             );
 
@@ -140,12 +142,7 @@ namespace MyApp.Services
 
         private int GetJwtExpirationMinutes()
         {
-            var jwtSettings = _configuration.GetSection("JwtSettings");
-            if (int.TryParse(jwtSettings["ExpirationInMinutes"], out var expiration))
-            {
-                return expiration;
-            }
-            return 60; // Default 60 minutes
+            return _jwtSettings.ExpirationInMinutes;
         }
     }
 }

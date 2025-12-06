@@ -1,5 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using MyApp.Core.Options;
 using System.Text;
 
 namespace MyApp.API.Extensions
@@ -8,11 +12,15 @@ namespace MyApp.API.Extensions
     {
         /// <summary>
         /// JWT Bearer Authentication'ı yapılandırır.
-        /// appsettings.json'dan JwtSettings bölümünü okur.
+        /// Options Pattern kullanarak appsettings.json'dan JwtSettings bölümünü okur.
         /// </summary>
         public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
-            var jwtSettings = configuration.GetSection("JwtSettings");
+            // Options Pattern ile JwtSettings'i register et
+            services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
+
+            // JWT Settings'i oku
+            var jwtSettings = configuration.GetSection(JwtSettings.SectionName);
             var secretKey = jwtSettings["SecretKey"];
 
             if (string.IsNullOrEmpty(secretKey))
@@ -20,6 +28,7 @@ namespace MyApp.API.Extensions
                 throw new InvalidOperationException("JWT SecretKey is not configured in appsettings.json");
             }
 
+            // Authentication scheme'leri ayarla
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -37,6 +46,44 @@ namespace MyApp.API.Extensions
                     ValidAudience = jwtSettings["Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
                     ClockSkew = TimeSpan.Zero
+                };
+
+                // JWT Events - Debug için
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<JwtBearerOptions>>();
+                        logger.LogError(context.Exception,
+                            "JWT Authentication Failed. Path: {Path}, Error: {Error}",
+                            context.Request.Path, context.Exception.Message);
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<JwtBearerOptions>>();
+                        logger.LogInformation(
+                            "JWT Token Validated successfully. User: {UserName}, Path: {Path}",
+                            context.Principal?.Identity?.Name, context.Request.Path);
+                        return Task.CompletedTask;
+                    },
+                    OnChallenge = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<JwtBearerOptions>>();
+                        logger.LogWarning(
+                            "JWT Challenge triggered. Path: {Path}, Error: {Error}, ErrorDescription: {ErrorDescription}",
+                            context.Request.Path, context.Error, context.ErrorDescription);
+                        return Task.CompletedTask;
+                    },
+                    OnMessageReceived = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<JwtBearerOptions>>();
+                        var token = context.Token;
+                        logger.LogDebug(
+                            "JWT Token received. Path: {Path}, HasToken: {HasToken}",
+                            context.Request.Path, !string.IsNullOrEmpty(token));
+                        return Task.CompletedTask;
+                    }
                 };
             });
 

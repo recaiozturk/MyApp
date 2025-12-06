@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using MyApp.API.Options;
 using MyApp.Core.Entities;
 using MyApp.Data;
 
@@ -10,13 +12,14 @@ namespace MyApp.API.Extensions
         /// <summary>
         /// Veritabanı oluşturulduğunda SuperAdmin kullanıcısını ve rolünü seed eder.
         /// Eğer kullanıcı zaten varsa, işlem yapılmaz.
+        /// Options Pattern kullanarak appsettings.json'dan SuperAdmin ayarlarını okur.
         /// </summary>
         public static async Task SeedSuperAdminAsync(this WebApplication app)
         {
             using var scope = app.Services.CreateScope();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+            var superAdminSettings = scope.ServiceProvider.GetRequiredService<IOptions<SuperAdminSettings>>().Value;
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
             try
@@ -33,40 +36,36 @@ namespace MyApp.API.Extensions
                     logger.LogInformation("SuperAdmin role created.");
                 }
 
-                // SuperAdmin kullanıcısını oluştur (yoksa)
-                var superAdminConfig = configuration.GetSection("SuperAdmin");
-                var userName = superAdminConfig["UserName"];
-                var email = superAdminConfig["Email"];
-                var password = superAdminConfig["Password"];
-                var firstName = superAdminConfig["FirstName"];
-                var lastName = superAdminConfig["LastName"];
-
-                if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+                // SuperAdmin ayarlarını kontrol et
+                if (string.IsNullOrEmpty(superAdminSettings.UserName) || 
+                    string.IsNullOrEmpty(superAdminSettings.Email) || 
+                    string.IsNullOrEmpty(superAdminSettings.Password))
                 {
                     logger.LogWarning("SuperAdmin configuration is missing in appsettings.json. Skipping seed.");
                     return;
                 }
 
-                var existingUser = await userManager.FindByNameAsync(userName);
+                var existingUser = await userManager.FindByNameAsync(superAdminSettings.UserName);
                 if (existingUser == null)
                 {
                     var superAdmin = new ApplicationUser
                     {
-                        UserName = userName,
-                        Email = email,
-                        FirstName = firstName,
-                        LastName = lastName,
+                        UserName = superAdminSettings.UserName,
+                        Email = superAdminSettings.Email,
+                        FirstName = superAdminSettings.FirstName,
+                        LastName = superAdminSettings.LastName,
                         CreatedDate = DateTime.UtcNow,
                         IsActive = true,
                         EmailConfirmed = true // SuperAdmin için email confirmation atla
                     };
 
-                    var result = await userManager.CreateAsync(superAdmin, password);
+                    var result = await userManager.CreateAsync(superAdmin, superAdminSettings.Password);
                     if (result.Succeeded)
                     {
                         // SuperAdmin rolünü ata
                         await userManager.AddToRoleAsync(superAdmin, superAdminRole);
-                        logger.LogInformation("SuperAdmin user created successfully. Username: {UserName}, Email: {Email}", userName, email);
+                        logger.LogInformation("SuperAdmin user created successfully. Username: {UserName}, Email: {Email}", 
+                            superAdminSettings.UserName, superAdminSettings.Email);
                     }
                     else
                     {

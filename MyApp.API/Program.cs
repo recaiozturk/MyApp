@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerConfiguration();
+builder.Services.AddGlobalExceptionHandler();// Global Exception Handling
 builder.Services.AddIdentityServices(builder.Configuration);// Add DbContext and Identity
 builder.Services.AddJwtAuthentication(builder.Configuration);// Add JWT Authentication
 builder.Services.AddApplicationServices();// Add Application Services (Repositories, Services, AutoMapper)
@@ -13,11 +14,19 @@ builder.Services.AddAngularCors(builder.Configuration);// Add CORS
 
 var app = builder.Build();
 
+// CORS - Authentication'dan ÖNCE olmalı (preflight request'ler için)
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("AllowAngularApp");
+}
+
+app.UseHttpsRedirection();
+app.UseGlobalExceptionHandler();// Global Exception Handler Middleware
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseCors("AllowAngularApp");
 }
 else
 {
@@ -26,7 +35,6 @@ else
     app.MapFallbackToFile("index.html");
 }
 
-app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

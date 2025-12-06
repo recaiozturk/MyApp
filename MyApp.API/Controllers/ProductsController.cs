@@ -7,7 +7,7 @@ namespace MyApp.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // Tüm endpoint'ler için authentication gerekli
+    [Authorize]
     public class ProductsController : ControllerBase
     {
         private readonly IProductService _productService;
@@ -28,52 +28,28 @@ namespace MyApp.API.Controllers
         public async Task<ActionResult<ProductDto>> GetProduct(int id)
         {
             var product = await _productService.GetProductByIdAsync(id);
-            if (product == null)
-                return NotFound();
-
             return Ok(product);
         }
 
         [HttpPost]
         public async Task<ActionResult<ProductDto>> CreateProduct(CreateProductDto createProductDto)
         {
-            try
-            {
-                var product = await _productService.CreateProductAsync(createProductDto);
-                return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var product = await _productService.CreateProductAsync(createProductDto);
+            return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProduct(int id, UpdateProductDto updateProductDto)
         {
-            try
-            {
-                var product = await _productService.UpdateProductAsync(id, updateProductDto);
-                return Ok(product);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var product = await _productService.UpdateProductAsync(id, updateProductDto);
+            return Ok(product);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
-            try
-            {
-                await _productService.DeleteProductAsync(id);
-                return NoContent();
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            await _productService.DeleteProductAsync(id);
+            return NoContent();
         }
     }
 }
