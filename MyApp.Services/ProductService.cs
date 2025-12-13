@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using MyApp.Core.DTOs;
 using MyApp.Core.Entities;
 using MyApp.Core.Exceptions;
@@ -11,11 +12,16 @@ namespace MyApp.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger<ProductService> _logger;
 
-        public ProductService(IProductRepository productRepository, IMapper mapper)
+        public ProductService(
+            IProductRepository productRepository, 
+            IMapper mapper,
+            ILogger<ProductService> logger)
         {
             _productRepository = productRepository;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()
@@ -40,6 +46,11 @@ namespace MyApp.Services
             product.IsActive = true;
 
             var createdProduct = await _productRepository.AddAsync(product);
+
+            _logger.LogInformation(
+                "Product created successfully. Id: {ProductId}, Name: {ProductName}",
+                createdProduct.Id, createdProduct.Name);
+
             return _mapper.Map<ProductDto>(createdProduct);
         }
 
@@ -47,12 +58,22 @@ namespace MyApp.Services
         {
             var existingProduct = await _productRepository.GetByIdAsync(id);
             if (existingProduct == null)
+            {
+                _logger.LogWarning(
+                    "Product not found for update. Id: {ProductId}",
+                    id);
                 throw new NotFoundException(nameof(Product), id);
+            }
 
             _mapper.Map(updateProductDto, existingProduct);
             existingProduct.UpdatedDate = DateTime.UtcNow;
 
             var updatedProduct = await _productRepository.UpdateAsync(existingProduct);
+
+            _logger.LogInformation(
+                "Product updated successfully. Id: {ProductId}, Name: {ProductName}",
+                updatedProduct.Id, updatedProduct.Name);
+
             return _mapper.Map<ProductDto>(updatedProduct);
         }
 
@@ -60,9 +81,18 @@ namespace MyApp.Services
         {
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null)
+            {
+                _logger.LogWarning(
+                    "Product not found for deletion. Id: {ProductId}",
+                    id);
                 throw new NotFoundException(nameof(Product), id);
+            }
 
             await _productRepository.DeleteAsync(product);
+
+            _logger.LogInformation(
+                "Product deleted successfully. Id: {ProductId}, Name: {ProductName}",
+                id, product.Name);
         }
     }
 }

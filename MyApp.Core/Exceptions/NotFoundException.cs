@@ -16,3 +16,4 @@ namespace MyApp.Core.Exceptions
     }
 }
 
+
