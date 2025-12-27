@@ -27,4 +27,14 @@ export class AppComponent implements OnInit {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+
+  isSuperAdmin(): boolean {
+    return this.authService.isSuperAdmin();
+  }
+
+  openAdminPanel(): void {
+    // Admin paneli yeni sekmede aç
+    const url = this.router.serializeUrl(this.router.createUrlTree(['/admin']));
+    window.open(url, '_blank');
+  }
 }

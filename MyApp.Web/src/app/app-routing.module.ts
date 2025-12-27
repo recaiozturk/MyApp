@@ -30,6 +30,12 @@ const routes: Routes = [
     path: 'products/:id/edit', 
     component: ProductFormComponent,
     canActivate: [AuthGuard] // /products/:id/edit için guard
+  },
+  
+  // Admin panel - Lazy loading
+  {
+    path: 'admin',
+    loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule)
   }
 ];
 

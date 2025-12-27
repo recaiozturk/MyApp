@@ -60,7 +60,7 @@ namespace MyApp.Services
             }
 
             // Generate token
-            var token = GenerateJwtToken(user);
+            var token = await GenerateJwtTokenAsync(user);
 
             return new AuthResponseDto
             {
@@ -95,7 +95,7 @@ namespace MyApp.Services
             }
 
             // Generate token
-            var token = GenerateJwtToken(user);
+            var token = await GenerateJwtTokenAsync(user);
 
             return new AuthResponseDto
             {
@@ -109,7 +109,7 @@ namespace MyApp.Services
             };
         }
 
-        private string GenerateJwtToken(ApplicationUser user)
+        private async Task<string> GenerateJwtTokenAsync(ApplicationUser user)
         {
             if (string.IsNullOrEmpty(_jwtSettings.SecretKey))
             {
@@ -119,7 +119,10 @@ namespace MyApp.Services
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var claims = new[]
+            // Get user roles
+            var roles = await _userManager.GetRolesAsync(user);
+            
+            var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
@@ -128,6 +131,13 @@ namespace MyApp.Services
                 new Claim("userId", user.Id),
                 new Claim("userName", user.UserName ?? string.Empty)
             };
+
+            // Add role claims
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+                claims.Add(new Claim("role", role)); // Also add as custom claim for easier access
+            }
 
             var token = new JwtSecurityToken(
                 issuer: _jwtSettings.Issuer,

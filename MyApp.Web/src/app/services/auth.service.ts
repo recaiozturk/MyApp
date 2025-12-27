@@ -63,6 +63,55 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
+  getUserRoles(): string[] {
+    const token = this.getToken();
+    if (!token) {
+      return [];
+    }
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const roles: string[] = [];
+      
+      // Check 'role' claim (custom claim)
+      if (payload.role) {
+        if (Array.isArray(payload.role)) {
+          roles.push(...payload.role);
+        } else {
+          roles.push(payload.role);
+        }
+      }
+      
+      // Check 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role' claim (ClaimTypes.Role)
+      const roleClaimKey = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
+      if (payload[roleClaimKey]) {
+        if (Array.isArray(payload[roleClaimKey])) {
+          payload[roleClaimKey].forEach((role: string) => {
+            if (!roles.includes(role)) {
+              roles.push(role);
+            }
+          });
+        } else if (!roles.includes(payload[roleClaimKey])) {
+          roles.push(payload[roleClaimKey]);
+        }
+      }
+      
+      return roles.filter(r => r);
+    } catch {
+      return [];
+    }
+  }
+
+  isSuperAdmin(): boolean {
+    const roles = this.getUserRoles();
+    return roles.includes('SuperAdmin');
+  }
+
+  hasRole(role: string): boolean {
+    const roles = this.getUserRoles();
+    return roles.includes(role);
+  }
+
   private setAuthData(response: AuthResponse): void {
     localStorage.setItem('token', response.token);
     const user: User = {

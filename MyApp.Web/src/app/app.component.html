@@ -19,6 +19,7 @@
             <strong>{{ currentUser.userName }}</strong>
             <small class="text-light ms-2">({{ currentUser.email }})</small>
           </span>
+          <button *ngIf="isSuperAdmin()" class="btn btn-outline-warning btn-sm me-2" (click)="openAdminPanel()">Admin Panel</button>
           <button class="btn btn-outline-light btn-sm" (click)="logout()">Çıkış Yap</button>
         </li>
       </ul>

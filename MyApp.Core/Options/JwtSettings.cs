@@ -13,5 +13,3 @@ namespace MyApp.Core.Options
         public int ExpirationInMinutes { get; set; } = 60;
     }
 }
-
-
