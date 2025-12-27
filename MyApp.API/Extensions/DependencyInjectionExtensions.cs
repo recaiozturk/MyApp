@@ -18,10 +18,12 @@ namespace MyApp.API.Extensions
             // Add Repositories
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<ILogRepository, LogRepository>();
 
             // Add Services
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ILogService, LogService>();
 
             return services;
         }

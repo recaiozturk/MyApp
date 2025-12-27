@@ -81,3 +81,4 @@ PRINT 'Tüm index''ler oluşturuldu.'
 GO
 
 
+

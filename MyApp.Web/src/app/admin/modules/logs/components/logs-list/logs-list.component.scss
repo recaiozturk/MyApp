@@ -1,18 +1,27 @@
 .logs-container {
   padding: 0;
   margin: 0;
+
+  .card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+
+    .font-semibold.text-xl {
+      color: var(--text-color);
+    }
+  }
 }
 
-::ng-deep .p-card {
-  margin: 0 !important;
-  
-  .p-card-header {
-    background-color: var(--surface-50);
-    border-bottom: 1px solid var(--surface-border);
-  }
-
-  .p-card-body {
-    padding: 1.5rem;
+::ng-deep .p-datatable-caption {
+  .p-iconfield.p-iconfield-left {
+    .p-inputicon {
+      margin-top: -3px !important;
+      
+      i {
+        display: inline-block;
+        vertical-align: middle;
+      }
+    }
   }
 }
 
@@ -91,6 +100,14 @@
     text-transform: uppercase;
     font-size: 0.75rem;
     letter-spacing: 0.5px;
+
+    > div.flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+    }
   }
 
   .p-datatable-tbody > tr {

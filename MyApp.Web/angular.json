@@ -35,6 +35,9 @@
             ],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "node_modules/primeicons/primeicons.css",
+              "node_modules/primeflex/primeflex.min.css",
+              "src/assets/layout/layout.scss",
               "src/styles.scss"
             ],
             "scripts": []
@@ -76,10 +79,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "MyApp.Web:build:production"
+              "buildTarget": "MyApp.Web:build:production"
             },
             "development": {
-              "browserTarget": "MyApp.Web:build:development"
+              "buildTarget": "MyApp.Web:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -87,7 +90,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "MyApp.Web:build"
+            "buildTarget": "MyApp.Web:build"
           }
         },
         "test": {
@@ -105,6 +108,9 @@
             ],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "node_modules/primeicons/primeicons.css",
+              "node_modules/primeflex/primeflex.min.css",
+              "src/assets/layout/layout.scss",
               "src/styles.scss"
             ],
             "scripts": []
