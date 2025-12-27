@@ -1,0 +1,103 @@
+.logs-container {
+  padding: 0;
+  margin: 0;
+}
+
+::ng-deep .p-card {
+  margin: 0 !important;
+  
+  .p-card-header {
+    background-color: var(--surface-50);
+    border-bottom: 1px solid var(--surface-border);
+  }
+
+  .p-card-body {
+    padding: 1.5rem;
+  }
+}
+
+.log-message {
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.log-detail {
+  .detail-row {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    label {
+      font-weight: 600;
+      color: var(--text-color-secondary);
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    span {
+      color: var(--text-color);
+    }
+  }
+
+  .log-message-full {
+    padding: 1rem;
+    background-color: var(--surface-50);
+    border-radius: 4px;
+    border: 1px solid var(--surface-border);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .callsite {
+    padding: 0.5rem;
+    background-color: var(--surface-100);
+    border-radius: 4px;
+    font-size: 0.875rem;
+    display: block;
+    word-break: break-all;
+  }
+
+  .exception-text,
+  .properties-text {
+    padding: 1rem;
+    background-color: var(--surface-50);
+    border: 1px solid var(--surface-border);
+    border-radius: 4px;
+    font-size: 0.875rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 300px;
+    overflow-y: auto;
+    margin: 0;
+  }
+
+  .exception-text {
+    background-color: #fff3cd;
+    border-color: #ffc107;
+    color: #856404;
+  }
+}
+
+::ng-deep .p-datatable {
+  .p-datatable-thead > tr > th {
+    background-color: var(--surface-50);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+  }
+
+  .p-datatable-tbody > tr {
+    &:hover {
+      background-color: var(--surface-hover);
+    }
+  }
+}
+
+
