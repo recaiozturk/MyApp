@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MyApp.API.Options;
-using MyApp.Core.Entities;
+using MyApp.Data.Shared.Entities;
 using MyApp.Data;
 
 namespace MyApp.API.Extensions

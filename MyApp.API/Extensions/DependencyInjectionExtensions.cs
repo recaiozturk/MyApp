@@ -1,7 +1,16 @@
-using MyApp.Core.Interfaces;
-using MyApp.Data.Repositories;
-using MyApp.Services;
-using MyApp.Services.Mapping;
+using MyApp.Data.Shared.Interfaces;
+using MyApp.Data.Shared.Repositories;
+using MyApp.Data.Product.Interfaces;
+using MyApp.Data.Product.Repositories;
+using MyApp.Data.Log.Interfaces;
+using MyApp.Data.Log.Repositories;
+using MyApp.Services.Product;
+using MyApp.Services.Product.Interfaces;
+using MyApp.Services.Product.Mapping;
+using MyApp.Services.Auth;
+using MyApp.Services.Auth.Interfaces;
+using MyApp.Services.Log;
+using MyApp.Services.Log.Interfaces;
 
 namespace MyApp.API.Extensions
 {

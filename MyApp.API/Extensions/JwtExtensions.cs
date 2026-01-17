@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using MyApp.Core.Options;
+using MyApp.Services.Auth.Options;
 using System.Text;
 
 namespace MyApp.API.Extensions

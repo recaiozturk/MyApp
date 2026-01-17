@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MyApp.Core.DTOs;
-using MyApp.Core.Interfaces;
+using MyApp.Services.Product.DTOs;
+using MyApp.Services.Product.Interfaces;
 
 namespace MyApp.API.Controllers
 {

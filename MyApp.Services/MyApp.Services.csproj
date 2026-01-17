@@ -1,7 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\MyApp.Core\MyApp.Core.csproj" />
     <ProjectReference Include="..\MyApp.Data\MyApp.Data.csproj" />
   </ItemGroup>
 

@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MyApp.Core.DTOs;
-using MyApp.Core.Interfaces;
+using MyApp.Services.Log.DTOs;
+using MyApp.Services.Log.Interfaces;
 
 namespace MyApp.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "SuperAdmin")] // Sadece SuperAdmin erişebilir
+    [Authorize(Roles = "SuperAdmin")]
     public class LogsController : ControllerBase
     {
         private readonly ILogService _logService;

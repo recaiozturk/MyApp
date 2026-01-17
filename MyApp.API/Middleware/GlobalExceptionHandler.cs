@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using MyApp.Core.Exceptions;
+using MyApp.Services.Shared.Exceptions;
 using System.Net;
 using System.Text.Json;
 

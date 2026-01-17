@@ -1,7 +1,8 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using MyApp.Core.Entities;
+using MyApp.Data.Shared.Entities;
+using MyApp.Data.Product.Entities;
+using MyApp.Data.Log.Entities;
 
 namespace MyApp.Data
 {
@@ -11,15 +12,15 @@ namespace MyApp.Data
         {
         }
 
-        public DbSet<Product> Products { get; set; }
-        public DbSet<Log> Logs { get; set; }
+        public DbSet<Product.Entities.Product> Products { get; set; }
+        public DbSet<Log.Entities.Log> Logs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             // Product entity configuration
-            modelBuilder.Entity<Product>(entity =>
+            modelBuilder.Entity<Product.Entities.Product>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
@@ -28,7 +29,7 @@ namespace MyApp.Data
                 entity.Property(e => e.Category).HasMaxLength(50);
                 
                 // Seed data
-                entity.HasData(new Product
+                entity.HasData(new Product.Entities.Product
                 {
                     Id = 1,
                     Name = "Sample Product 1",
@@ -42,7 +43,7 @@ namespace MyApp.Data
             });
 
             // Log entity configuration
-            modelBuilder.Entity<Log>(entity =>
+            modelBuilder.Entity<Log.Entities.Log>(entity =>
             {
                 entity.ToTable("Logs");
                 entity.HasKey(e => e.Id);
@@ -64,4 +65,3 @@ namespace MyApp.Data
         }
     }
 }
-
