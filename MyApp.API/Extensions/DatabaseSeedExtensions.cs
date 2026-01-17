@@ -9,11 +9,6 @@ namespace MyApp.API.Extensions
 {
     public static class DatabaseSeedExtensions
     {
-        /// <summary>
-        /// Veritabanı oluşturulduğunda SuperAdmin kullanıcısını ve rolünü seed eder.
-        /// Eğer kullanıcı zaten varsa, işlem yapılmaz.
-        /// Options Pattern kullanarak appsettings.json'dan SuperAdmin ayarlarını okur.
-        /// </summary>
         public static async Task SeedSuperAdminAsync(this WebApplication app)
         {
             using var scope = app.Services.CreateScope();
@@ -24,11 +19,9 @@ namespace MyApp.API.Extensions
 
             try
             {
-                // Veritabanının hazır olduğundan emin ol
                 var dbContext = scope.ServiceProvider.GetRequiredService<MyAppDbContext>();
                 await dbContext.Database.MigrateAsync();
 
-                // SuperAdmin rolünü oluştur (yoksa)
                 const string superAdminRole = "SuperAdmin";
                 if (!await roleManager.RoleExistsAsync(superAdminRole))
                 {
@@ -36,7 +29,6 @@ namespace MyApp.API.Extensions
                     logger.LogInformation("SuperAdmin role created.");
                 }
 
-                // SuperAdmin ayarlarını kontrol et
                 if (string.IsNullOrEmpty(superAdminSettings.UserName) || 
                     string.IsNullOrEmpty(superAdminSettings.Email) || 
                     string.IsNullOrEmpty(superAdminSettings.Password))
@@ -56,13 +48,12 @@ namespace MyApp.API.Extensions
                         LastName = superAdminSettings.LastName,
                         CreatedDate = DateTime.UtcNow,
                         IsActive = true,
-                        EmailConfirmed = true // SuperAdmin için email confirmation atla
+                        EmailConfirmed = true
                     };
 
                     var result = await userManager.CreateAsync(superAdmin, superAdminSettings.Password);
                     if (result.Succeeded)
                     {
-                        // SuperAdmin rolünü ata
                         await userManager.AddToRoleAsync(superAdmin, superAdminRole);
                         logger.LogInformation("SuperAdmin user created successfully. Username: {UserName}, Email: {Email}", 
                             superAdminSettings.UserName, superAdminSettings.Email);

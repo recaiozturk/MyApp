@@ -6,10 +6,6 @@ using System.Text.Json;
 
 namespace MyApp.API.Middleware
 {
-    /// <summary>
-    /// Global exception handler - ASP.NET Core 8 IExceptionHandler implementasyonu
-    /// Problem Details (RFC 7807) standardına uygun response döner
-    /// </summary>
     public class GlobalExceptionHandler : IExceptionHandler
     {
         private readonly ILogger<GlobalExceptionHandler> _logger;
@@ -56,20 +52,17 @@ namespace MyApp.API.Middleware
                 Instance = httpContext.Request.Path
             };
 
-            // TraceId ekle (Activity.Current?.Id veya httpContext.TraceIdentifier)
             if (httpContext.TraceIdentifier != null)
             {
                 problemDetails.Extensions["traceId"] = httpContext.TraceIdentifier;
             }
 
-            // Development modunda stack trace ekle
             if (_environment.IsDevelopment())
             {
                 problemDetails.Extensions["stackTrace"] = exception.StackTrace;
                 problemDetails.Extensions["innerException"] = exception.InnerException?.Message;
             }
 
-            // Validation errors için ek bilgiler
             if (exception is BadRequestException badRequestException)
             {
                 problemDetails.Extensions["errors"] = new { message = badRequestException.Message };

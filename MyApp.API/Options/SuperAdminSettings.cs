@@ -1,8 +1,5 @@
 namespace MyApp.API.Options
 {
-    /// <summary>
-    /// SuperAdmin kullanıcı ayarları için Options Pattern sınıfı
-    /// </summary>
     public class SuperAdminSettings
     {
         public const string SectionName = "SuperAdmin";

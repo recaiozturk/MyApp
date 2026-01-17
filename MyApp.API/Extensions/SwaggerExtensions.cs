@@ -4,16 +4,12 @@ namespace MyApp.API.Extensions
 {
     public static class SwaggerExtensions
     {
-        /// <summary>
-        /// Swagger/OpenAPI yapılandırmasını ekler ve JWT Bearer authentication desteği sağlar.
-        /// </summary>
         public static IServiceCollection AddSwaggerConfiguration(this IServiceCollection services)
         {
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "MyApp API", Version = "v1" });
                 
-                // JWT Bearer Authentication için Swagger yapılandırması
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token",

@@ -10,16 +10,10 @@ namespace MyApp.API.Extensions
 {
     public static class JwtExtensions
     {
-        /// <summary>
-        /// JWT Bearer Authentication'ı yapılandırır.
-        /// Options Pattern kullanarak appsettings.json'dan JwtSettings bölümünü okur.
-        /// </summary>
         public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
-            // Options Pattern ile JwtSettings'i register et
             services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
 
-            // JWT Settings'i oku
             var jwtSettings = configuration.GetSection(JwtSettings.SectionName);
             var secretKey = jwtSettings["SecretKey"];
 
@@ -28,7 +22,6 @@ namespace MyApp.API.Extensions
                 throw new InvalidOperationException("JWT SecretKey is not configured in appsettings.json");
             }
 
-            // Authentication scheme'leri ayarla
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -48,7 +41,6 @@ namespace MyApp.API.Extensions
                     ClockSkew = TimeSpan.Zero
                 };
 
-                // JWT Events - Debug için
                 options.Events = new JwtBearerEvents
                 {
                     OnAuthenticationFailed = context =>
